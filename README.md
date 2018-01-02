@@ -8,6 +8,11 @@ You'll find everything you need to:
 * Create a Kubernetes secret to store the credentials for the app
 * Deploy the app to a Kubernetes cluster.
 
+## Acknowledgements
+
+This repo is based on the Watson Developer Cloud team's awesome 
+[conversation-simple application](https://github.com/watson-developer-cloud/conversation-simple). Many thanks to that team for their excellent work.
+
 ## Before you begin
 
 * Get on the IBM Cloud
