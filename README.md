@@ -1,6 +1,8 @@
 # Kubernetes Secret example
 
-This Node.js app contains everything you need to:
+This repo is a companion to the developerWorks Mailbag video [Using Kubernetes secrets to manage credentials](https://developer.ibm.com/tv/using-kubernetes-secrets-manage-credentials/).
+
+You'll find everything you need to:
 
 * Build a Docker image from the Rameses II chatbot app
 * Create a Kubernetes secret to store the credentials for the app
@@ -69,7 +71,7 @@ Whew. In a nutshell, here's what you'll do:
 
 1. Create a **Kubernetes secret** that contains the credentials of your conversation service. You'll create this
 with the `convo-secret.yaml` file.
-1. Deploy the Docker image that contains your app to your cluster using the `convo-deployment.yaml` file.
+1. Deploy the Docker image containing your app to your cluster using the `convo-deployment.yaml` file.
 1. Do some magic (covered in the video) with the `kubectl` command.
 1. Have fun with your chatbot, now running live on the web.
 1. Share the URL with your friends and family so they can share your joy.
