@@ -1,198 +1,78 @@
-# Conversation Sample Application [![Build Status](https://travis-ci.org/watson-developer-cloud/conversation-simple.svg?branch=master)](http://travis-ci.org/watson-developer-cloud/conversation-simple) [![codecov.io](https://codecov.io/github/watson-developer-cloud/conversation-simple/coverage.svg?branch=master)](https://codecov.io/github/watson-developer-cloud/conversation-simple?branch=master)
+# Kubernetes Secret example
 
-This Node.js app demonstrates the Conversation service in a simple chat interface simulating a cognitive car dashboard.
+This Node.js app contains everything you need to:
 
-![Demo](readme_images/demo.gif)
-
-You can view a [demo][demo_url] of this app.
+* Build a Docker image from the Rameses II chatbot app
+* Create a Kubernetes secret to store the credentials for the app
+* Deploy the app to a Kubernetes cluster.
 
 ## Before you begin
 
-* Create a Bluemix account
-    * [Sign up](https://console.ng.bluemix.net/registration/?target=/catalog/%3fcategory=watson) in Bluemix, or use an existing account. Your account must have available space for at least 1 app and 1 service.
-* Make sure that you have the following prerequisites installed:
-    * The [Node.js](https://nodejs.org/#download) runtime, including the [npm][npm_link] package manager
-    * The [Cloud Foundry][cloud_foundry] command-line client
+* Get on the IBM Cloud
+    * [Sign up](https://console.bluemix.net/registration/?cm_sp=dw-bluemix-_-dwtv-dwMailbag-_-show&cm_sp=dw-bluemix-_-tv-_-devcenter) in the IBM Cloud console or use your existing account. Your account must have available space for at least 1 service and 1 cluster.
+* Make sure that you've installed the following things:
+    * The [Node.js runtime](https://nodejs.org/#download), including the [NPM package manager](https://npmjs.com)
+    * The [Bluemix (`bx`) command-line client](https://console.bluemix.net/docs/cli/index.html#downloads). Once you've got that installed:
+      * Type `bx plugin install container-registry -r Bluemix` to install the
+        container registry plugin
+      * Type `bx plugin install container-service -r Bluemix` to install the
+        container service plugin
+    * [Docker Community Edition](https://www.docker.com/get-docker)
+    * The [Kubernetes `kubectl` command-line tool](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
-      Note: Ensure that you Cloud Foundry version is up to date
+## Some background, if you want it
 
-## Installing locally
+All of the steps involved in creating the chatbot app, building the docker
+image, and creating the Kubernetes cluster are covered in the following
+developerWorks Mailbag videos:
 
-If you want to modify the app or use it as a basis for building your own app, install it locally. You can then deploy your modified version of the app to the Bluemix cloud.
+* Building chatbots in the IBM Cloud - [Part 1](https://developer.ibm.com/tv/dw-mailbag-chatbots-part-1/) |
+[Part 2](https://developer.ibm.com/tv/dw-mailbag-chatbots-part-2/)
+* [Using Docker containers and images on your machine](https://developer.ibm.com/tv/dw-mailbag-docker-intro/)
+* [Building a Kubernetes cluster in the IBM Cloud](https://developer.ibm.com/tv/dw-mailbag-kubernetes-clusters/)
 
-### Getting the files
+If you go through all the exercises in those videos, you'll have the same
+starting point as the companion video for this repo. _However_, you can use
+the techniques we cover with any Docker image containing any application you choose.
+Feel free to use your own app instead.
 
-Use GitHub to clone the repository locally, or [download the .zip file](https://github.com/watson-developer-cloud/conversation-simple/archive/master.zip) of the repository and extract the files.
+## Setting up the Conversation service
 
-### Setting up the Conversation service
-
-You can use an exisiting instance of the Conversation service. Otherwise, follow these steps.
-
-1. At the command line, go to the local project directory (`conversation-simple`).
-
-1. Connect to Bluemix with the Cloud Foundry command-line tool. For more information, see the Watson Developer Cloud [documentation][cf_docs].
-    ```bash
-    cf login
-    ```
-
-1. Create an instance of the Conversation service in Bluemix. For example:
-
-    ```bash
-    cf create-service conversation free my-conversation-service
-    ```
+You can use an existing instance of the Conversation service if you have one.
+If you want a guided tour for creating a new service, the developerWorks Mailbag
+video [Building chatbots in the IBM Cloud - Part 1](https://developer.ibm.com/tv/dw-mailbag-chatbots-part-1/) covers this around the 2:00 mark.
 
 ### Importing the Conversation workspace
 
-1. In your browser, navigate to [your Bluemix console] (https://console.ng.bluemix.net/dashboard/services).
+From [the IBM Cloud console](https://console.ng.bluemix.net/dashboard/services), click on your
+Conversation Service in the list of services, then click the Import icon to
+import the file `RoyalValet.json` into the service. Be sure to import everything, including the entities, intents, and dialogs.
 
-1. From the **All Items** tab, click the newly created Conversation service in the **Services** list.
+Details of importing data into a Conversation Service are in the video [Building chatbots in the IBM Cloud - Part 1](https://developer.ibm.com/tv/dw-mailbag-chatbots-part-1/) around the 9:05 mark.
 
-    ![Screen capture of Services list](readme_images/conversation_service.png)
+## The preliminaries
 
-1. On the Service Details page, click **Launch tool**.
+Before you go through the steps in this video, we assume you have a Docker image that contains an app that needs credentials.
+If you've followed the video series, you've done the following steps:
 
-1. Click the **Import workspace** icon in the Conversation service tool. Specify the location of the workspace JSON file in your local copy of the app project:
+1. Built a Docker image from the code in the repo. The repo contains a `Dockerfile` and a `.dockerignore` file to make this easy.
+1. Uploaded that Docker image to your IBM Cloud repository.
+1. Used the IBM Cloud console to get the credentials for your conversation service.
+You'll need the values for `WORKSPACE_ID`, `CONVERSATION_USERNAME`, and `CONVERSATION_PASSWORD`.
+1. Used the IBM Cloud console to create a cluster. (If you'd like to continue your
+tour of dW Mailbag videos, you can find the cluster creation details around the 1:50 mark of [Building a Kubernetes cluster in the IBM Cloud](https://developer.ibm.com/tv/dw-mailbag-kubernetes-clusters/).)
+1. Configured the `kubectl` command to point to your cluster. (If you need to see how to do that, the details are at the 5:45 mark in the [Building a Kubernetes cluster in the IBM Cloud](https://developer.ibm.com/tv/dw-mailbag-kubernetes-clusters/) video.)
 
-    `<project_root>/training/car_workspace.json`
+## Der plan
 
-1. Select **Everything (Intents, Entities, and Dialog)** and then click **Import**. The car dashboard workspace is created.
+Whew. In a nutshell, here's what you'll do:
 
-### Configuring the app environment
-
-1. Copy or rename the `.env.example` file to `.env` (nothing before the dot).
-
-1. Create a service key in the format `cf create-service-key <service_instance> <service_key>`. For example:
-
-    ```bash
-    cf create-service-key my-conversation-service myKey
-    ```
-
-1. Retrieve the credentials from the service key using the command `cf service-key <service_instance> <service_key>`. For example:
-
-    ```bash
-    cf service-key my-conversation-service myKey
-    ```
-
-   The output from this command is a JSON object, as in this example:
-
-    ```JSON
-    {
-      "password": "87iT7aqpvU7l",
-      "url": "https://gateway.watsonplatform.net/conversation/api",
-      "username": "ca2905e6-7b5d-4408-9192-e4d54d83e604"
-    }
-    ```
-
-1. Paste  the `password` and `username` values (without quotation marks) from the JSON into the `CONVERSATION_PASSWORD` and `CONVERSATION_USERNAME` variables in the `.env` file. For example:
-
-    ```
-    CONVERSATION_USERNAME=ca2905e6-7b5d-4408-9192-e4d54d83e604
-    CONVERSATION_PASSWORD=87iT7aqpvU7l
-    ```
-
-1. In your Bluemix console, open the Conversation service instance where you imported the workspace.
-
-1. Click the menu icon in the upper-right corner of the workspace tile, and then select **View details**.
-
-    ![Screen capture of workspace tile menu](readme_images/workspace_details.png)
-
-1. Click the ![Copy](readme_images/copy_icon.png) icon to copy the workspace ID to the clipboard.
-
-1. On the local system, paste the workspace ID into the WORKSPACE_ID variable in the `.env` file. Save and close the file.
-
-### Installing and starting the app
-
-1. Install the demo app package into the local Node.js runtime environment:
-
-    ```bash
-    npm install
-    ```
-
-1. Start the app:
-
-    ```bash
-    npm start
-    ```
-
-1. Point your browser to http://localhost:3000 to try out the app.
-
-## Testing the app
-
-After your app is installed and running, experiment with it to see how it responds.
-
-The chat interface is on the left, and the JSON that the JavaScript code receives from the Conversation service is on the right. Your questions and commands are interpreted using a small set of sample data trained with the following intents:
-
-    turn_on
-    turn_off
-    turn_up
-    turn_down
-    traffic_update
-    locate_amenity
-    weather
-    phone
-    capabilities
-    greetings
-    goodbyes
-
-Type a request, such as `music on` or `I want to turn on the windshield wipers`. The system understands your intent and responds. You can see the details of how your input was understood by examining the JSON data in the `Watson understands` section on the right side.
-
-For example, if you type `Turn on some music`, the JSON data shows that the system understood the `turn_on` intent with a high level of confidence, along with the `appliance` entity with a value of `music`.
-
-For more information about intents, see the [Conversation service documentation][doc_intents].
-
-To see details of how these intents are defined, including sample input for each intent, launch the Conversation tool.
-
-## Modifying the app
-
-After you have the app deployed and running, you can explore the source files and make changes. Try the following:
-
-* Modify the .js files to change the app logic.
-* Modify the .html file to change the appearance of the app page.
-* Use the Conversation tool to train the service for new intents, or to modify the dialog flow. For more information, see the [Conversation service documentation][docs_landing].
-
-## Deploying to Bluemix
-
-You can use Cloud Foundry to deploy your local version of the app to Bluemix.
-
-1. In the project root directory, open the `manifest.yml` file:
-
-  * In the `applications` section of the `manifest.yml` file, change the `name` value to a unique name for your version of the demo app.
-  * In the `services` section, specify the name of the Conversation service instance you created for the demo app. If you do not remember the service name, use the `cf services` command to list all services you have created.
-
-  The following example shows a modified `manifest.yml` file:
-
-  ```yml
-  ---
-  declared-services:
-   conversation-service:
-     label: conversation
-     plan: free
-  applications:
-  - name: conversation-simple-app-test1
-   command: npm start
-   path: .
-   memory: 256M
-   instances: 1
-   services:
-   - my-conversation-service
-   env:
-     NPM_CONFIG_PRODUCTION: false
-  ```
-
-1. Push the app to Bluemix:
-
-  ```bash
-  cf push
-  ```
-  Access your app on Bluemix at the URL specified in the command output.
-
-## Troubleshooting
-
-If you encounter a problem, you can check the logs for more information. To see the logs, run the `cf logs` command:
-
-```none
-cf logs <application-name> --recent
-```
+1. Create a **Kubernetes secret** that contains the credentials of your conversation service. You'll create this
+with the `convo-secret.yaml` file.
+1. Deploy the Docker image that contains your app to your cluster using the `convo-deployment.yaml` file.
+1. Do some magic (covered in the video) with the `kubectl` command.
+1. Have fun with your chatbot, now running live on the web.
+1. Share the URL with your friends and family so they can share your joy.
 
 ## License
 
