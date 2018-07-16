@@ -18,7 +18,8 @@
 
 var express = require('express'); // app server
 var bodyParser = require('body-parser'); // parser for post requests
-var Conversation = require('watson-developer-cloud/conversation/v1'); // watson sdk
+var AssistantV1 = require('watson-developer-cloud/assistant/v1'); // watson sdk
+var assistant_credential = JSON.parse(process.env.ASSISTANT_CREDENTIAL);
 
 var app = express();
 
@@ -27,12 +28,10 @@ app.use(express.static('./public')); // load UI from public folder
 app.use(bodyParser.json());
 
 // Create the service wrapper
-var conversation = new Conversation({
-  // If unspecified here, the CONVERSATION_USERNAME and CONVERSATION_PASSWORD env properties will be checked
-  // After that, the SDK will fall back to the bluemix-provided VCAP_SERVICES environment property
-  //'username': process.env.CONVERSATION_USERNAME,
-  //'password': process.env.CONVERSATION_PASSWORD,
-  'version_date': '2017-05-26'
+var assistant = new AssistantV1({
+  username: assistant_credential.username,
+  password: assistant_credential.password,
+  version: '2018-02-16'
 });
 
 // Endpoint to be call from the client side
@@ -51,8 +50,8 @@ app.post('/api/message', function(req, res) {
     input: req.body.input || {}
   };
 
-  // Send the input to the conversation service
-  conversation.message(payload, function(err, data) {
+  // Send the input to the assistant service
+  assistant.message(payload, function(err, data) {
     if (err) {
       return res.status(err.code || 500).json(err);
     }
@@ -62,8 +61,8 @@ app.post('/api/message', function(req, res) {
 
 /**
  * Updates the response text using the intent confidence
- * @param  {Object} input The request to the Conversation service
- * @param  {Object} response The response from the Conversation service
+ * @param  {Object} input The request to the Assistant service
+ * @param  {Object} response The response from the Assistant service
  * @return {Object}          The response with the updated message
  */
 function updateMessage(input, response) {

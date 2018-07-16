@@ -1,0 +1,44 @@
+---
+# Service to expose frontend
+apiVersion: v1
+kind: Service
+metadata:
+  name: watson-bot-service
+  labels:
+    app: watson-bot
+spec:
+  type: NodePort
+  ports:
+  - port: 3000
+  selector:
+    app: watson-bot
+---
+# Application to deploy
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: watson-bot
+  namespace: default
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: watson-bot
+    spec:
+      containers:
+      - name: watson-bot
+        # Should match the name of your Docker image in your repository
+        image: registry.ng.bluemix.net/ykishida/watson
+        env:
+        - name: WORKSPACE_ID
+          valueFrom:
+            configMapKeyRef:
+              # Should match the name of your Kubernetes secret
+              name: assistant-config
+              key: workspace_id
+        - name: ASSISTANT_CREDENTIAL
+          valueFrom:
+            secretKeyRef:
+              name: binding-assistant-cc
+              key: binding
