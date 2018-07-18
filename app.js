@@ -29,8 +29,7 @@ app.use(bodyParser.json());
 
 // Create the service wrapper
 var assistant = new AssistantV1({
-  username: assistant_credential.username,
-  password: assistant_credential.password,
+  apikey : assistant_credential.apikey,
   version: '2018-02-16'
 });
 
