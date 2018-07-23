@@ -29,7 +29,7 @@ app.use(bodyParser.json());
 
 // Create the service wrapper
 
-if (assistant_credential.username == null){
+if (assistant_credential.username != null){
   var assistant = new AssistantV1({
     username: assistant_credential.username,
     password: assistant_credential.password,
