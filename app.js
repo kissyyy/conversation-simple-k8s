@@ -38,7 +38,7 @@ if (assistant_credential.username != null){
 }
 else {
   var assistant = new AssistantV1({
-    api_key: assistant_credential.apikey,
+    iam_apikey: assistant_credential.apikey,
     url: assistant_credential.url,
     version: '2018-02-16'
   });
