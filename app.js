@@ -28,11 +28,21 @@ app.use(express.static('./public')); // load UI from public folder
 app.use(bodyParser.json());
 
 // Create the service wrapper
-var assistant = new AssistantV1({
-  username: assistant_credential.username,
-  password: assistant_credential.password,
-  version: '2018-02-16'
-});
+
+if (assistant.assistant_credential.username == null){
+  var assistant = new AssistantV1({
+    username: assistant_credential.username,
+    password: assistant_credential.password,
+    version: '2018-02-16'
+  });
+}
+else {
+  var assistant = new AssistantV1({
+    api_key: assistant_credential.apikey,
+    url: assistant_credential.url,
+    version: '2018-02-16'
+  });
+}
 
 // Endpoint to be call from the client side
 app.post('/api/message', function(req, res) {
