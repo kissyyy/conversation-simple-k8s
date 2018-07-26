@@ -40,5 +40,5 @@ spec:
         - name: ASSISTANT_CREDENTIAL
           valueFrom:
             secretKeyRef:
-              name: binding-watsonassistant-3d
+              name: binding-watsonassistant-cc
               key: binding
